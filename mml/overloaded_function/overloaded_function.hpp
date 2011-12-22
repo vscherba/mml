@@ -427,11 +427,11 @@ namespace detail {
         typename boost::call_traits<F>::reference
         get()
         {
-            using namespace boost::mpl;
+            namespace _bmpl = boost::mpl;
             return get<
-                distance<
-                      typename begin<types>::type
-                    , typename find<
+                _bmpl::distance<
+                      typename _bmpl::begin<types>::type
+                    , typename _bmpl::find<
                         types, F
                         >::type
                     >::value

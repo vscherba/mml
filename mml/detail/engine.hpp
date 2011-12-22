@@ -40,16 +40,16 @@ public:
     result_type
     next_arg(Disp& disp, _MML_FORMAL_PARAM_LIST)
     {
-        using namespace boost::mpl;
+        namespace _bmpl = boost::mpl;
 
         long const i_next_arg = IArg + 1;
         long const next_errors = Errors | (Error << IArg);
-        typedef typename if_c<
+        typedef typename _bmpl::if_c<
               i_next_arg == _MML_ENGINE_N
-            , typename if_c<
+            , typename _bmpl::if_c<
                   bool(next_errors)
                 , disp_arg_handle_err_tag
-                , typename if_<
+                , typename _bmpl::if_<
                       boost::is_void<result_type>
                     , disp_arg_invoke_void_tag
                     , disp_arg_invoke_tag
@@ -76,12 +76,12 @@ public:
     result_type
     dispatch_arg(disp_arg_refine_tag, Disp& disp, _MML_FORMAL_PARAM_LIST)
     {
-        using namespace boost::mpl;
+        namespace _bmpl = boost::mpl;
 
-        typedef typename if_<
-              and_<
-                  less<long_<IArg>, size<refineries> >
-                , not_<empty<refinery> >
+        typedef typename _bmpl::if_<
+              _bmpl::and_<
+                  _bmpl::less<_bmpl::long_<IArg>, _bmpl::size<refineries> >
+                , _bmpl::not_<_bmpl::empty<refinery> >
                 , pointer_traits_specified<A0>
                 >
             , disp_arg_start_refine_tag
@@ -143,11 +143,11 @@ private:
     result_type
     next_type(Disp& disp, Caster& prev_caster, _MML_FORMAL_PARAM_LIST)
     {
-        using namespace boost::mpl;
+        namespace _bmpl = boost::mpl;
 
         long const i_next_type = IType + 1;
-        typedef typename if_c<
-              i_next_type == size<refinery>::value
+        typedef typename _bmpl::if_c<
+              i_next_type == _bmpl::size<refinery>::value
             , disp_type_end_of_types_tag
             , disp_type_refine_tag
             >::type disp_type_tag;
@@ -168,18 +168,18 @@ private:
         , _MML_FORMAL_PARAM_LIST
         )
     {
-        using namespace boost::mpl;
+        namespace _bmpl = boost::mpl;
 
         typedef typename
             get_desired_pointer_type<IType>::type desired_pointer_type;
 
-        typedef typename if_<
+        typedef typename _bmpl::if_<
               typename refinery::template is_static_castable<
                   fact_pointer_type
                 , desired_pointer_type
                 >::type
             , disp_type_static_refine_tag
-            , typename if_<
+            , typename _bmpl::if_<
                   typename refinery::template is_dynamic_castable<
                       fact_pointer_type
                     , desired_pointer_type
