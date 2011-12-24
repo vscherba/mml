@@ -170,7 +170,7 @@ namespace detail {
 
         BOOST_PP_REPEAT_FROM_TO(
               1
-            , MML_MAX_FUNCTION_OVERLOADS
+            , BOOST_PP_INC(MML_MAX_FUNCTION_OVERLOADS)
             , _MML_SEQ_HOLDER_CONSTRUCTOR
             ,
             )
