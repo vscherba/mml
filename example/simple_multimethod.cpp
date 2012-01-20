@@ -18,6 +18,7 @@
 #include <mml/generation/make_multimethod.hpp>
 #include <mml/generation/make_ref_multimethod.hpp>
 #include <mml/util/static_function.hpp>
+#include <mml/casting/sp_dynamic_caster.hpp>
 
 #include "game_hierarchy.hpp"
 
@@ -94,8 +95,6 @@ void collide_tester(F collide, Objs& objs)
             cout << '\t' << collide(objs[i], objs[j]) << endl;
         }
     }
-
-    cout << '\t' << collide(objs[1], objs[2]) << endl;
 }
 
 void multimethod_use()
@@ -181,7 +180,7 @@ void ref_multimethod_use()
         );
 }
 
-struct collider2
+struct collider_sh_as
     : binary_function<space_ship*, asteroid*, const char*>
 {
     const char* operator()(space_ship*, asteroid*) const
@@ -196,7 +195,7 @@ void multimethod_functor_use()
           make_multimethod(
               collide_go_go
             , collide_sh_sh
-            , collider2()
+            , collider_sh_as()
             , collide_as_sh
             , collide_as_as
             )
@@ -209,19 +208,47 @@ void multimethod_functor_wrapper_use()
     typedef static_function<
           const char*(asteroid*, space_ship*)
         , collide_as_sh
-        > collider3;
+        > collider_as_sh;
 
     collide_tester(
           make_multimethod(
               collide_go_go
             , collide_sh_sh
-            , collider2()
-            , collider3()
+            , collider_sh_as()
+            , collider_as_sh()
             , collide_as_as
             )
         , get_obj_pointers()
         );
 }
+
+/*
+// collide(objs[i], objs[j])
+inline const char* collide(game_object* obj1, game_object* obj2)
+{
+    if (space_ship* sh1 = dynamic_cast<space_ship*>(obj1))
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            return collide_sh_sh(sh1, sh2);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            return collide_sh_as(sh1, as2);
+        else
+            return collide_go_go(sh1, obj2);
+    else if (asteroid* as1 = dynamic_cast<asteroid*>(obj1))
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            return collide_as_sh(as1, sh2);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            return collide_as_as(as1, as2);
+        else
+            return collide_go_go(as1, obj2);
+    else
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            return collide_go_go(obj1, sh2);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            return collide_go_go(obj1, as2);
+        else
+            return collide_go_go(obj1, obj2);
+}
+*/
 
 const char* collide_void()
 {
@@ -259,7 +286,7 @@ const char* collide_sh_as_st(space_ship*, asteroid*, space_station*)
 }
 
 template <typename F, typename Objs>
-void collide_tester2(F collide, Objs& objs)
+void collide_tester_var_arg(F collide, Objs& objs)
 {
     cout << '\t' << collide() << endl;
 
@@ -283,7 +310,7 @@ void multimethod_var_arg_use()
     " example is disabled. You could place it into separate cpp file to compile and test." \
     )
 #else
-    collide_tester2(
+    collide_tester_var_arg(
           make_multimethod(
               collide_go_go
             , collide_sh_sh
@@ -293,13 +320,110 @@ void multimethod_var_arg_use()
             , collide_sh
             , collide_as
             , collide_go_go_go
-            , collide_sh_as_st
             , collide_sh_as_as
+            , collide_sh_as_st
             )
         , get_obj_pointers()
         );
 #endif
 }
+
+/*
+// collide()
+inline const char* collide()
+{
+    return collide_void();
+}
+
+// collide(objs[0])
+// collide(objs[1])
+inline const char* collide(game_object* obj)
+{
+    if (space_ship* sh = dynamic_cast<space_ship*>(obj))
+        return collide_sh(sh);
+    else if (asteroid* as = dynamic_cast<asteroid*>(obj))
+        return collide_as(as);
+    else
+        return collide_go(obj);
+}
+
+// collide(objs[0], objs[0])
+// collide(objs[0], objs[1])
+// as shown above: inline const char* collide(game_object* obj1, game_object* obj2) {...}
+
+// 3 params
+// collide(objs[0], objs[1], objs[1])
+// collide(objs[0], objs[1], objs[2])
+inline const char* collide(game_object* obj1, game_object* obj2, game_object* obj3)
+{
+    if (space_ship* sh1 = dynamic_cast<space_ship*>(obj1))
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_go_go_go(sh1, sh2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_go_go_go(sh1, sh2, st3);
+            else
+                return collide_go_go_go(sh1, sh2, obj3);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_sh_as_as(sh1, as2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_sh_as_st(sh1, as2, st3);
+            else
+                return collide_go_go_go(sh1, as2, obj3);
+        else
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_go_go_go(sh1, obj2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_go_go_go(sh1, obj2, st3);
+            else
+                return collide_go_go_go(sh1, obj2, obj3);
+    else if (asteroid* as1 = dynamic_cast<asteroid*>(obj1))
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_go_go_go(as1, sh2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_go_go_go(as1, sh2, st3);
+            else
+                return collide_go_go_go(as1, sh2, obj3);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_go_go_go(as1, as2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_go_go_go(as1, as2, st3);
+            else
+                return collide_go_go_go(as1, as2, obj3);
+        else
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_go_go_go(as1, obj2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_go_go_go(as1, obj2, st3);
+            else
+                return collide_go_go_go(as1, obj2, obj3);
+    else
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_go_go_go(obj1, sh2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_go_go_go(obj1, sh2, st3);
+            else
+                return collide_go_go_go(obj1, sh2, obj3);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_go_go_go(obj1, as2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_go_go_go(obj1, as2, st3);
+            else
+                return collide_go_go_go(obj1, as2, obj3);
+        else
+            if (asteroid* as3 = dynamic_cast<asteroid*>(obj3))
+                return collide_go_go_go(obj1, obj2, as3);
+            else if (space_station* st3 = dynamic_cast<space_station*>(obj3))
+                return collide_go_go_go(obj1, obj2, st3);
+            else
+                return collide_go_go_go(obj1, obj2, obj3);
+}
+*/
 
 const char* collide_go_go_int(game_object*, game_object*, int)
 {
@@ -312,7 +436,7 @@ const char* collide_sh_as_int(space_ship*, asteroid*, int)
 }
 
 template <typename F, typename Objs>
-void collide_tester3(F collide, Objs& objs)
+void collide_tester_non_polymorphic_arg(F collide, Objs& objs)
 {
     cout << '\t' << collide(objs[0], objs[1]) << endl;
     cout << '\t' << collide(objs[0], objs[1], objs[2]) << endl;
@@ -328,7 +452,7 @@ void multimethod_non_polymorphic_arg_use()
     " example is disabled. You could place it into separate cpp file to compile and test." \
     )
 #else
-    collide_tester3(
+    collide_tester_non_polymorphic_arg(
           make_multimethod(
               collide_go_go
             , collide_sh_sh
@@ -367,7 +491,7 @@ const char* collide_sh_cvas(space_ship*, const volatile asteroid*)
 }
 
 template <typename F, typename Objs>
-void collide_tester4(F collide, Objs& objs)
+void collide_tester_cv(F collide, Objs& objs)
 {
     game_object* object = objs[1];
     const game_object* c_object = objs[1];
@@ -380,7 +504,7 @@ void collide_tester4(F collide, Objs& objs)
 
 void multimethod_cv_use()
 {
-    collide_tester4(
+    collide_tester_cv(
           make_multimethod(
               collide_sh_as
             , collide_go_cvgo
@@ -393,7 +517,7 @@ void multimethod_cv_use()
 }
 
 template <typename F, typename Objs>
-void collide_tester5(F collide, Objs& objs)
+void collide_tester_compile_time_optim(F collide, Objs& objs)
 {
     space_ship ship;
     asteroid ast;
@@ -404,7 +528,7 @@ void collide_tester5(F collide, Objs& objs)
 
 void compile_time_disp_optimization_use()
 {
-    collide_tester5(
+    collide_tester_compile_time_optim(
           make_multimethod(
               collide_go_go
             , collide_sh_as
@@ -412,6 +536,55 @@ void compile_time_disp_optimization_use()
             )
         , get_obj_pointers()
         );
+}
+
+const char* sp_collide_go_go(game_object*, boost::shared_ptr<game_object>)
+{
+    return "Unsupported colliding!";
+}
+
+const char* sp_collide_sh_sh(space_ship*, boost::shared_ptr<space_ship>)
+{
+    return "Space ship collides with smart_ptr space ship";
+}
+
+struct sp_collider_sh_as
+    : binary_function<space_ship*, boost::shared_ptr<asteroid>, const char*>
+{
+    const char* operator()(space_ship*, boost::shared_ptr<asteroid>) const
+    {
+        return "Space ship collides with smart_ptr asteroid";
+    }
+};
+
+template <typename F, typename Objs>
+void sp_collide_tester(F collide, Objs& objs)
+{
+    boost::shared_ptr<game_object> obj1(new space_ship);
+    boost::shared_ptr<game_object> obj2(new asteroid);
+
+    cout << '\t' << collide(objs[0], obj1) << endl;
+    cout << '\t' << collide(objs[0], obj2) << endl;
+}
+
+void multimethod_sp_use()
+{
+#if defined(_MSC_VER) && _MSC_VER < 1400
+#   pragma message( \
+    "Warning: there is too many template source code for VC 7.0-7.1 in this cpp file, " \
+    __FUNCTION__ \
+    " example is disabled. You could place it into separate cpp file to compile and test." \
+    )
+#else
+    sp_collide_tester(
+          make_multimethod(
+              sp_collide_go_go
+            , sp_collide_sh_sh
+            , sp_collider_sh_as()
+            )
+        , get_obj_pointers()
+        );
+#endif
 }
 
 int main(int argc, char* argv[])
@@ -424,6 +597,7 @@ int main(int argc, char* argv[])
     multimethod_non_polymorphic_arg_use();
     multimethod_cv_use();
     compile_time_disp_optimization_use();
+    multimethod_sp_use();
 
     return 0;
 }
