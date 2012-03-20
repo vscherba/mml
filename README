@@ -1,0 +1,31 @@
+Most simple using example:
+
+#include <mml/generation/make_multimethod.hpp>
+
+struct game_object
+{
+    virtual ~game_object()
+    {
+    }
+};
+
+struct space_ship : game_object {};
+struct space_station : game_object {};
+struct asteroid : game_object {};
+
+void collide_go_go(game_object*, game_object*);
+void collide_sh_sh(space_ship*, space_ship*);
+void collide_sh_as(space_ship*, asteroid*);
+void collide_as_sh(asteroid*, space_ship*);
+void collide_as_as(asteroid*, asteroid*);
+
+// returns functional object which performs dynamic overloading
+make_multimethod(
+              collide_go_go
+            , collide_sh_sh
+            , collide_sh_as
+            , collide_as_sh
+            , collide_as_as
+            );
+
+See https://bitbucket.org/vscherba/mml/src/tip/example/simple_multimethod.cpp for more details.
