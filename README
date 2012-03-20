@@ -29,3 +29,8 @@ make_multimethod(
             );
 
 See https://bitbucket.org/vscherba/mml/src/tip/example/simple_multimethod.cpp for more details.
+
+Compilers tested (for the present Windows only):
+
+GCC 3.4.2
+Visual C++ 7.1, 8.0, 9.0, 10.0
