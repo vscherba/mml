@@ -49,6 +49,9 @@
 using namespace std;
 using namespace mml;
 
+
+// helpers >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 // helper which returns vector of three polymorphic object pointers
 vector<game_object*>& get_obj_pointers()
 {
@@ -82,6 +85,11 @@ boost::ptr_vector<game_object>& get_objs_refs()
 
     return objs;
 }
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< helpers
+
+
+// multimethod_use() example >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 // multimethod dispatches closed hierarchies, so no need to modify its
 // thus, multimethod can dispatch any old hierarchy you have ever made
@@ -161,6 +169,10 @@ void multimethod_use()
         );
 }
 
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< multimethod_use() example
+
+
+// ref_multimethod_use() example >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 // target set of overloaded functions with reference arguments
 
@@ -223,6 +235,10 @@ void ref_multimethod_use()
         );
 }
 
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ref_multimethod_use() example
+
+
+// multimethod_functor_wrapper_use() example >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 // we can also use functors as target overloads
 struct collider_sh_as
@@ -273,6 +289,9 @@ void multimethod_functor_wrapper_use()
         );
 }
 
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< multimethod_functor_wrapper_use() example
+
+
 /*
 // I give C++ code equivalent for first four examples
 // it is equivalent of generated code after template instantiation and inlining
@@ -301,12 +320,13 @@ inline const char* collide(game_object* obj1, game_object* obj2)
         else
             return collide_go_go(obj1, obj2);
 }
-
 // runtime overhead:
 // min 2 casts
 // max 4 casts
 */
 
+
+// multimethod_var_arg_use() example >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 // multimethod works with arbitary number of parameters
 
@@ -396,6 +416,8 @@ void multimethod_var_arg_use()
 }
 
 /*
+// C++ code equivalent for collide_tester_var_arg instantiation
+
 // collide()
 inline const char* collide()
 {
@@ -415,6 +437,9 @@ inline const char* collide(game_object* obj)
     else
         return collide_go(obj);
 }
+// runtime overhead:
+// min 1 casts
+// max 2 casts
 
 // collide(objs[0], objs[0])
 // collide(objs[0], objs[1])
@@ -491,11 +516,15 @@ inline const char* collide(game_object* obj1, game_object* obj2, game_object* ob
             else
                 return collide_go_go_go(obj1, obj2, obj3);
 }
-
 // runtime overhead:
 // min 3 casts
 // max 6 casts
 */
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< multimethod_var_arg_use() example
+
+
+// multimethod_non_polymorphic_arg_use() example >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 const char* collide_go_go_int(game_object*, game_object*, int)
 {
@@ -543,6 +572,8 @@ void multimethod_non_polymorphic_arg_use()
 }
 
 /*
+// C++ code equivalent for collide_tester_non_polymorphic_arg instantiation
+
 // collide(objs[0], objs[1])
 // as shown above: inline const char* collide(game_object* obj1, game_object* obj2) {...}
 
@@ -574,11 +605,15 @@ inline const char* collide(game_object* obj1, game_object* obj2, int n)
         else
             return collide_go_go_int(obj1, obj2, n);
 }
-
 // runtime overhead:
 // min 2 casts
 // max 4 casts
 */
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< multimethod_non_polymorphic_arg_use() example
+
+
+// multimethod_cv_use() example >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 const char* collide_go_cvgo(game_object*, const volatile game_object*)
 {
@@ -626,6 +661,11 @@ void multimethod_cv_use()
         );
 }
 
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< multimethod_cv_use() example
+
+
+// compile_time_disp_optimization_use() example >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 template <typename F, typename Objs>
 void collide_tester_compile_time_optim(F collide, Objs& objs)
 {
@@ -651,6 +691,8 @@ void compile_time_disp_optimization_use()
 }
 
 /*
+// C++ code equivalent for collide_tester_compile_time_optim instantiation
+
 // collide(objs[0], &ast)
 inline const char* collide(game_object* obj1, asteroid* as2)
 {
@@ -672,6 +714,14 @@ inline const char* collide(space_ship* sh1, asteroid* as2)
 }
 // no runtime overhead! direct call to collide_sh_as!
 */
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< compile_time_disp_optimization_use() example
+
+
+// multimethod_sp_use() example >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+// <mml/casting/sp_dynamic_caster.hpp> involves code
+// that allows to dispatch boost::shared_ptr<T> such as built-in pointer
 
 const char* sp_collide_go_go(game_object*, boost::shared_ptr<game_object>)
 {
@@ -723,6 +773,8 @@ void multimethod_sp_use()
 }
 
 /*
+// C++ code equivalent for sp_collide_tester instantiation
+
 // collide(objs[0], obj1)
 // collide(objs[0], obj2)
 inline const char* collide(game_object* obj1, const boost::shared_ptr<game_object>& sp_obj2)
@@ -746,6 +798,9 @@ inline const char* collide(game_object* obj1, const boost::shared_ptr<game_objec
 // min 2 casts
 // max 3 casts
 */
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< multimethod_sp_use() example
+
 
 int main(int argc, char* argv[])
 {
