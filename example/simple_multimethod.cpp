@@ -8,6 +8,22 @@
 
 // Examines using of simple approach (lower threshold)
 
+// For common simple using you need only one library function
+// which creates and returns multimethod<...> as functional object:
+// make_multimethod(f1, ..., fn), where f1, ..., fn - function pointers or
+// functional objects which will be dynamicly overloaded.
+
+// In 90% cases there are no need any extra requirements, restrictions
+// or any special library support for user hierarchy.
+
+// First example "void multimethod_use()" demonstrate it,
+// rest examples show some variations of simple using.
+
+// multimethod template is only facade for basic_dispatcher template class,
+// its functionality is more wider, but it examines in other example source file.
+
+// Library is "header only".
+
 #include <iostream>
 #include <vector>
 #include <functional>
@@ -15,16 +31,25 @@
 #include <boost/function.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
+// multimethod creator for pointer arguments (main header for this example)
 #include <mml/generation/make_multimethod.hpp>
+
+// multimethod creator for reference arguments
 #include <mml/generation/make_ref_multimethod.hpp>
+
+// utility helper
 #include <mml/util/static_function.hpp>
+
+// header to enable boost::shared_ptr arguments dispatching
 #include <mml/casting/sp_dynamic_caster.hpp>
 
+// contains example hierarchy
 #include "game_hierarchy.hpp"
 
 using namespace std;
 using namespace mml;
 
+// helper which returns vector of three polymorphic object pointers
 vector<game_object*>& get_obj_pointers()
 {
     static space_ship ship;
@@ -43,6 +68,7 @@ vector<game_object*>& get_obj_pointers()
     return objs;
 }
 
+// helper which returns vector of three polymorphic object references
 boost::ptr_vector<game_object>& get_objs_refs()
 {
     static boost::ptr_vector<game_object> objs;
@@ -57,7 +83,12 @@ boost::ptr_vector<game_object>& get_objs_refs()
     return objs;
 }
 
-// We set different overloaded functions names for convenient taking pointers of them
+// multimethod dispatches closed hierarchies, so no need to modify its
+// thus, multimethod can dispatch any old hierarchy you have ever made
+// without modifications and recompilations
+
+// target set of overloaded functions with poiner arguments
+// we set different overloaded functions names for convenient taking pointers of them
 
 const char* collide_go_go(game_object*, game_object*)
 {
@@ -84,7 +115,7 @@ const char* collide_as_as(asteroid*, asteroid*)
     return "Asteroid collides with asteroid";
 }
 
-// collide_tester applies collide function for each combination of pairs of game_object*
+// collide_tester applies collide function for each combination of pairs of objs elements
 template <typename F, typename Objs>
 void collide_tester(F collide, Objs& objs)
 {
@@ -97,10 +128,12 @@ void collide_tester(F collide, Objs& objs)
     }
 }
 
+// first simple example function
 void multimethod_use()
 {
+    // call tester
     collide_tester(
-          make_multimethod(
+          make_multimethod( // creates multimethod based on function pointers
               collide_go_go
             , collide_sh_sh
             , collide_sh_as
@@ -110,6 +143,7 @@ void multimethod_use()
         , get_obj_pointers()
         );
 
+    // save multimethod in temporary variable
     boost::function<const char*(game_object*, game_object*)>
     /*auto*/ // use auto if compiler supports
         collide = make_multimethod(
@@ -120,11 +154,15 @@ void multimethod_use()
             , collide_as_as
             );
 
+    // call tester
     collide_tester(
           collide
         , get_obj_pointers()
         );
 }
+
+
+// target set of overloaded functions with reference arguments
 
 const char* collide_ref_go_go(game_object&, game_object&)
 {
@@ -151,8 +189,11 @@ const char* collide_ref_as_as(asteroid&, asteroid&)
     return "Asteroid collides with asteroid";
 }
 
+
+// reference multimethod example
 void ref_multimethod_use()
 {
+    // call tester
     collide_tester(
           make_ref_multimethod(
               collide_ref_go_go
@@ -164,6 +205,7 @@ void ref_multimethod_use()
         , get_objs_refs()
         );
 
+    // save multimethod in temporary variable
     boost::function<const char*(game_object&, game_object&)>
     /*auto*/ // use auto if compiler supports
         collide = make_ref_multimethod(
@@ -174,12 +216,15 @@ void ref_multimethod_use()
             , collide_ref_as_as
             );
 
+    // call tester
     collide_tester(
           collide
         , get_objs_refs()
         );
 }
 
+
+// we can also use functors as target overloads
 struct collider_sh_as
     : binary_function<space_ship*, asteroid*, const char*>
 {
@@ -189,6 +234,8 @@ struct collider_sh_as
     }
 };
 
+
+// example of multimethod with functor using
 void multimethod_functor_use()
 {
     collide_tester(
@@ -203,8 +250,12 @@ void multimethod_functor_use()
         );
 }
 
+// example of using static_function template utility
 void multimethod_functor_wrapper_use()
 {
+    // static_function represents function pointer wrapper
+    // it allows to optimizing compiler make inlining instead of call function pointer
+    // static_function takes function reference with external linkage as second template parameter
     typedef static_function<
           const char*(asteroid*, space_ship*)
         , collide_as_sh
@@ -223,7 +274,9 @@ void multimethod_functor_wrapper_use()
 }
 
 /*
-// collide(objs[i], objs[j])
+// I give C++ code equivalent for first four examples
+// it is equivalent of generated code after template instantiation and inlining
+// call of collide(objs[i], objs[j]) generates:
 inline const char* collide(game_object* obj1, game_object* obj2)
 {
     if (space_ship* sh1 = dynamic_cast<space_ship*>(obj1))
@@ -248,7 +301,14 @@ inline const char* collide(game_object* obj1, game_object* obj2)
         else
             return collide_go_go(obj1, obj2);
 }
+
+// runtime overhead:
+// min 2 casts
+// max 4 casts
 */
+
+
+// multimethod works with arbitary number of parameters
 
 const char* collide_void()
 {
@@ -285,22 +345,29 @@ const char* collide_sh_as_st(space_ship*, asteroid*, space_station*)
     return "Space ship collides with asteroid and space_station";
 }
 
+
+// tester for multimethod with variable number of arguments
 template <typename F, typename Objs>
 void collide_tester_var_arg(F collide, Objs& objs)
 {
+    // no parameter
     cout << '\t' << collide() << endl;
 
+    // 1 parameter
     cout << '\t' << collide(objs[0]) << endl;
     cout << '\t' << collide(objs[1]) << endl;
 
+    // 2 parameters
     cout << '\t' << collide(objs[0], objs[0]) << endl;
     cout << '\t' << collide(objs[0], objs[1]) << endl;
 
+    // 3 parameters
     cout << '\t' << collide(objs[0], objs[1], objs[1]) << endl;
     cout << '\t' << collide(objs[0], objs[1], objs[2]) << endl;
 
 }
 
+// example of using variable number of arguments
 void multimethod_var_arg_use()
 {
 #if defined(_MSC_VER) && _MSC_VER < 1400
@@ -334,6 +401,8 @@ inline const char* collide()
 {
     return collide_void();
 }
+// no runtime overhead!
+
 
 // collide(objs[0])
 // collide(objs[1])
@@ -351,7 +420,6 @@ inline const char* collide(game_object* obj)
 // collide(objs[0], objs[1])
 // as shown above: inline const char* collide(game_object* obj1, game_object* obj2) {...}
 
-// 3 params
 // collide(objs[0], objs[1], objs[1])
 // collide(objs[0], objs[1], objs[2])
 inline const char* collide(game_object* obj1, game_object* obj2, game_object* obj3)
@@ -423,6 +491,10 @@ inline const char* collide(game_object* obj1, game_object* obj2, game_object* ob
             else
                 return collide_go_go_go(obj1, obj2, obj3);
 }
+
+// runtime overhead:
+// min 3 casts
+// max 6 casts
 */
 
 const char* collide_go_go_int(game_object*, game_object*, int)
@@ -469,6 +541,44 @@ void multimethod_non_polymorphic_arg_use()
         );
 #endif
 }
+
+/*
+// collide(objs[0], objs[1])
+// as shown above: inline const char* collide(game_object* obj1, game_object* obj2) {...}
+
+// collide(objs[0], objs[1], objs[2])
+// as shown above: inline const char* collide(game_object* obj1, game_object* obj2, game_object* obj3) {...}
+
+// collide(objs[0], objs[1], 1)
+inline const char* collide(game_object* obj1, game_object* obj2, int n)
+{
+    if (space_ship* sh1 = dynamic_cast<space_ship*>(obj1))
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            return collide_go_go_int(sh1, sh2, n);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            return collide_sh_as_int(sh1, as2, n);
+        else
+            return collide_go_go_int(sh1, obj2, n);
+    else if (asteroid* as1 = dynamic_cast<asteroid*>(obj1))
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            return collide_go_go_int(as1, sh2, n);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            return collide_go_go_int(as1, as2, n);
+        else
+            return collide_go_go_int(as1, obj2, n);
+    else
+        if (space_ship* sh2 = dynamic_cast<space_ship*>(obj2))
+            return collide_go_go_int(obj1, sh2, n);
+        else if (asteroid* as2 = dynamic_cast<asteroid*>(obj2))
+            return collide_go_go_int(obj1, as2, n);
+        else
+            return collide_go_go_int(obj1, obj2, n);
+}
+
+// runtime overhead:
+// min 2 casts
+// max 4 casts
+*/
 
 const char* collide_go_cvgo(game_object*, const volatile game_object*)
 {
@@ -531,12 +641,37 @@ void compile_time_disp_optimization_use()
     collide_tester_compile_time_optim(
           make_multimethod(
               collide_go_go
+            , collide_sh_sh
             , collide_sh_as
+            , collide_as_sh
             , collide_as_as
             )
         , get_obj_pointers()
         );
 }
+
+/*
+// collide(objs[0], &ast)
+inline const char* collide(game_object* obj1, asteroid* as2)
+{
+    if (space_ship* sh1 = dynamic_cast<space_ship*>(obj1))
+        return collide_sh_as(sh1, as2);
+    else if (asteroid* as1 = dynamic_cast<asteroid*>(obj1))
+        return collide_as_as(as1, as2);
+    else
+        return collide_go_go(obj1, as2);
+}
+// runtime overhead:
+// min 1 casts
+// max 2 casts
+
+// collide(&ship, &ast)
+inline const char* collide(space_ship* sh1, asteroid* as2)
+{
+    return collide_sh_as(sh1, as2);
+}
+// no runtime overhead! direct call to collide_sh_as!
+*/
 
 const char* sp_collide_go_go(game_object*, boost::shared_ptr<game_object>)
 {
@@ -586,6 +721,31 @@ void multimethod_sp_use()
         );
 #endif
 }
+
+/*
+// collide(objs[0], obj1)
+// collide(objs[0], obj2)
+inline const char* collide(game_object* obj1, const boost::shared_ptr<game_object>& sp_obj2)
+{
+    if (space_ship* sh1 = dynamic_cast<space_ship*>(obj1))
+        if (boost::shared_ptr<space_ship> sp_sh2 = boost::shared_dynamic_cast<space_ship>(sp_obj2))
+            return sp_collide_sh_sh(sh1, sp_sh2);
+        else if (boost::shared_ptr<asteroid> sp_as2 = boost::shared_dynamic_cast<asteroid>(sp_obj2))
+            return sp_collider_sh_as()(sh1, sp_as2);
+        else
+            return sp_collide_go_go(obj1, sp_obj2);
+    else
+        if (boost::shared_ptr<space_ship> sp_sh2 = boost::shared_dynamic_cast<space_ship>(sp_obj2))
+            return sp_collide_go_go(obj1, sp_sh2);
+        else if (boost::shared_ptr<asteroid> sp_as2 = boost::shared_dynamic_cast<asteroid>(sp_obj2))
+            return sp_collide_go_go(obj1, sp_as2);
+        else
+            return sp_collide_go_go(obj1, sp_obj2);
+}
+// runtime overhead:
+// min 2 casts
+// max 3 casts
+*/
 
 int main(int argc, char* argv[])
 {
