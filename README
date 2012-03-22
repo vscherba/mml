@@ -1,12 +1,14 @@
+BOOST version 1.45.0 or higher required.
+
+Parent directory (or directories) for <mml> and <boost> root directories must be set as additional include path for your compiler.
+
 Most simple using example:
 
 #include <mml/generation/make_multimethod.hpp>
 
 struct game_object
 {
-    virtual ~game_object()
-    {
-    }
+    virtual ~game_object() {}
 };
 
 struct space_ship : game_object {};
