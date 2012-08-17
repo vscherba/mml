@@ -44,7 +44,7 @@
 #include <mml/config.hpp>
 #include <mml/function_types/components.hpp>
 #include <mml/function_types/function_arity.hpp>
-#include <mml/function_types/functional_type.hpp>
+#include <mml/function_types/function_type.hpp>
 
 #ifdef MML_RESULT_OF_SUPPORT_ON
     // boost::utility
@@ -396,8 +396,8 @@ namespace detail {
         typedef typename tuple_type::types types;
         typedef typename boost::mpl::transform<
               types
-            , function_types::functional_type<boost::mpl::_>
-            >::type functional_types;
+            , function_types::function_type<boost::mpl::_>
+            >::type signatures;
 
         template <long N>
         typename boost::call_traits<
@@ -454,7 +454,7 @@ namespace detail {
         {
             typedef typename boost::function_types::result_type<
                 typename boost::mpl::at<
-                      functional_types
+                      signatures
                     , fn_index_of<F>
                     >::type
                 >::type type;
@@ -481,7 +481,7 @@ namespace detail {
                     >::type
                 >::value)
             , TWO_OR_MORE_OVERLOADED_FUNCTIONS_HAVE_EQUAL_PARAMETER_LISTS
-            , (typename overloaded_function_over_seq::functional_types)
+            , (typename overloaded_function_over_seq::signatures)
             );
 
         tuple_type _funcs;

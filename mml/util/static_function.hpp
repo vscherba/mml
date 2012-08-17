@@ -45,7 +45,7 @@ struct static_function;
         >                                                                   \
     struct static_function<R(BOOST_PP_ENUM_PARAMS(n, A)), f>                \
     {                                                                       \
-        typedef R functional_type(BOOST_PP_ENUM_PARAMS(n, A));              \
+        typedef R signature(BOOST_PP_ENUM_PARAMS(n, A));                    \
                                                                             \
         BOOST_PP_IF(                                                        \
               BOOST_PP_EQUAL(n, 1)                                          \

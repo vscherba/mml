@@ -18,33 +18,11 @@
 #include <boost/function_types/components.hpp>
 #include <boost/function_types/is_callable_builtin.hpp>
 
-#include <mml/function_types/detail/functor_components_over_traits.hpp>
+#include <mml/function_types/detail/functor_components.hpp>
 
 
 namespace mml {
 namespace function_types {
-
-namespace detail {
-
-    template <typename F>
-    struct functor_components_over_fn_type
-        : boost::function_types::components<
-            typename F::functional_type
-            >
-    {
-    };
-
-    template <typename F>
-    struct functor_components
-        : boost::mpl::if_<
-              has_functional_type<F>
-            , functor_components_over_fn_type<F>
-            , functor_components_over_traits<F>
-            >::type
-    {
-    };
-
-} // namespace detail
 
 template <typename F>
 struct components

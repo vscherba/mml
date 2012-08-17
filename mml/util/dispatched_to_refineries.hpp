@@ -14,7 +14,7 @@
 // boost::type_traits
 #include <boost/type_traits/remove_reference.hpp>
 
-#include <mml/util/functional_types_to_refineries.hpp>
+#include <mml/util/signatures_to_refineries.hpp>
 
 
 namespace mml {
@@ -35,8 +35,8 @@ template <
         class Filter = pointer_traits_specified
     >
 struct dispatched_to_refineries
-    : functional_types_to_refineries<
-          typename boost::remove_reference<OF>::type::functional_types
+    : signatures_to_refineries<
+          typename boost::remove_reference<OF>::type::signatures
         , DynCaster
         , DynCastablePred
         , StatCaster

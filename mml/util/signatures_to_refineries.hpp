@@ -7,8 +7,8 @@
 //
 
 
-#ifndef _MML_UTIL_FUNCTIONAL_TYPES_TO_REFINERIES_HPP_INCLUDED_
-#define _MML_UTIL_FUNCTIONAL_TYPES_TO_REFINERIES_HPP_INCLUDED_
+#ifndef _MML_UTIL_SIGNATURES_TO_REFINERIES_HPP_INCLUDED_
+#define _MML_UTIL_SIGNATURES_TO_REFINERIES_HPP_INCLUDED_
 
 
 // boost::mpl
@@ -33,7 +33,7 @@
 namespace mml {
 
 template <
-      typename FunctionalTypes
+      typename Signatures
     , template<typename, typename>
         class DynCaster = dynamic_caster
     , template<typename, typename>
@@ -47,11 +47,11 @@ template <
     , template<typename>
         class Filter = pointer_traits_specified
     >
-struct functional_types_to_refineries
+struct signatures_to_refineries
     : boost::mpl::transform<
           typename detail::zip_parameter_types<
               typename boost::mpl::transform<
-                  FunctionalTypes
+                  Signatures
                 , boost::function_types::parameter_types<boost::mpl::_>
                 >::type
             , OrderingPred
@@ -68,10 +68,10 @@ struct functional_types_to_refineries
             >
         >::type
 {
-    typedef functional_types_to_refineries type;
+    typedef signatures_to_refineries type;
 };
 
 } // namespace mml
 
 
-#endif // _MML_UTIL_FUNCTIONAL_TYPES_TO_REFINERIES_HPP_INCLUDED_
+#endif // _MML_UTIL_SIGNATURES_TO_REFINERIES_HPP_INCLUDED_

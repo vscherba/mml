@@ -23,11 +23,11 @@
 
 namespace mml {
 
-template <typename FunctionalTypes>
-struct first_result_type_from_functional_types
+template <typename Signatures>
+struct first_result_type_from_signatures
     : boost::function_types::result_type<
         typename boost::mpl::front<
-            FunctionalTypes
+            Signatures
             >::type
         >
 {
@@ -36,10 +36,10 @@ struct first_result_type_from_functional_types
 
 template <typename OF>
 struct first_result_type
-    : first_result_type_from_functional_types<
+    : first_result_type_from_signatures<
         typename boost::remove_reference<
             OF
-            >::type::functional_types
+            >::type::signatures
         >
 {
 };
