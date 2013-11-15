@@ -8,12 +8,12 @@
 
 // Test for <mml/result_of_support/result_of_support.hpp>
 
+#include <mml/result_of_support/result_of_support.hpp>
+
 #include <boost/config.hpp>
 #include <boost/utility/result_of.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/static_assert.hpp>
-
-#include <mml/result_of_support/result_of_support.hpp>
 
 
 #define CALL_CHECK(call, result)                                            \
