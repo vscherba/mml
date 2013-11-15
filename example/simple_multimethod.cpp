@@ -38,7 +38,7 @@
 #include <mml/generation/make_ref_multimethod.hpp>
 
 // utility helper
-#include <mml/util/static_function.hpp>
+#include <mml/util/inline_function.hpp>
 
 // header to enable boost::shared_ptr arguments dispatching
 #include <mml/casting/sp_dynamic_caster.hpp>
@@ -266,13 +266,13 @@ void multimethod_functor_use()
         );
 }
 
-// example of using static_function template utility
+// example of using inline_function template utility
 void multimethod_functor_wrapper_use()
 {
-    // static_function represents function pointer wrapper
+    // inline_function represents function pointer wrapper
     // it allows to optimizing compiler make inlining instead of call function pointer
-    // static_function takes function reference with external linkage as second template parameter
-    typedef static_function<
+    // inline_function takes function reference with external linkage as second template parameter
+    typedef inline_function<
           const char*(asteroid*, space_ship*)
         , collide_as_sh
         > collider_as_sh;

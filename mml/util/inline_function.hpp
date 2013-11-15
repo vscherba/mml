@@ -7,8 +7,8 @@
 //
 
 
-#ifndef _MML_UTIL_STATIC_FUNCTION_HPP_INCLUDED_
-#define _MML_UTIL_STATIC_FUNCTION_HPP_INCLUDED_
+#ifndef _MML_UTIL_INLINE_FUNCTION_HPP_INCLUDED_
+#define _MML_UTIL_INLINE_FUNCTION_HPP_INCLUDED_
 
 
 // boost::preprocessor
@@ -30,20 +30,20 @@ template <
       typename F
     , F& f
     >
-struct static_function;
+struct inline_function;
 
 
-#define _MML_SFUNCTION_ARG_N_TYPE_TYPEDEF(z, n, _)                          \
+#define _MML_IFUNCTION_ARG_N_TYPE_TYPEDEF(z, n, _)                          \
     typedef A##n BOOST_PP_CAT(arg, BOOST_PP_CAT(BOOST_PP_INC(n), _type));   \
     /**/
 
-#define _MML_STATIC_FUNCTION(z, n, _)                                       \
+#define _MML_INLINE_FUNCTION(z, n, _)                                       \
     template <                                                              \
           typename R                                                        \
           BOOST_PP_ENUM_TRAILING_PARAMS(n, typename A)                      \
         , R(&f)(BOOST_PP_ENUM_PARAMS(n, A))                                 \
         >                                                                   \
-    struct static_function<R(BOOST_PP_ENUM_PARAMS(n, A)), f>                \
+    struct inline_function<R(BOOST_PP_ENUM_PARAMS(n, A)), f>                \
     {                                                                       \
         typedef R signature(BOOST_PP_ENUM_PARAMS(n, A));                    \
                                                                             \
@@ -62,7 +62,7 @@ struct static_function;
                                                                             \
         typedef R result_type;                                              \
                                                                             \
-        BOOST_PP_REPEAT(n, _MML_SFUNCTION_ARG_N_TYPE_TYPEDEF, )             \
+        BOOST_PP_REPEAT(n, _MML_IFUNCTION_ARG_N_TYPE_TYPEDEF, )             \
                                                                             \
         R operator()(BOOST_PP_ENUM_BINARY_PARAMS(n, A, a)) const            \
         {                                                                   \
@@ -74,16 +74,16 @@ struct static_function;
 
 BOOST_PP_REPEAT(
       BOOST_PP_INC(MML_MAX_ARITY)
-    , _MML_STATIC_FUNCTION
+    , _MML_INLINE_FUNCTION
     ,
     )
 
 
 // undef temporaries
-#undef _MML_SFUNCTION_ARG_N_TYPE_TYPEDEF
-#undef _MML_STATIC_FUNCTION
+#undef _MML_IFUNCTION_ARG_N_TYPE_TYPEDEF
+#undef _MML_INLINE_FUNCTION
 
 } // namespace mml
 
 
-#endif // _MML_UTIL_STATIC_FUNCTION_HPP_INCLUDED_
+#endif // _MML_UTIL_INLINE_FUNCTION_HPP_INCLUDED_
