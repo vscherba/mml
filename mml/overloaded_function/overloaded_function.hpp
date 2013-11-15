@@ -46,10 +46,6 @@
 #include <mml/function_types/function_arity.hpp>
 #include <mml/function_types/function_type.hpp>
 
-#ifdef MML_RESULT_OF_SUPPORT_ON
-    // boost::utility
-#   include <boost/utility/declval.hpp>
-#endif // MML_RESULT_OF_SUPPORT_ON
 
 #ifdef MML_COMPRESSION_OFF
 #   include <boost/fusion/include/vector.hpp>
@@ -59,10 +55,39 @@
 #   define _MML_OF_REPLACE_NA_TO_VOID(z, n, _)                              \
         typename replace_na_to_void<f_type##n>::type                        \
         /**/
-
 #else
 #   include <mml/compressed_tuple/compressed_tuple.hpp>
 #endif // MML_COMPRESSION_OFF
+
+
+#ifdef MML_RESULT_OF_SUPPORT_ON
+#   include <mml/result_of_support/result_of_support.hpp>
+
+namespace mml {
+namespace detail {
+
+template <typename F>
+    struct create_signature
+    {
+        typedef const_signature<
+            typename function_types::function_type<F>::type
+            > type;
+    };
+
+    template <>
+    struct create_signature<boost::mpl::na>
+        : boost::mpl::na
+    {
+    };
+
+
+#   define _MML_OF_CREATE_SIGNATURE(z, n, _)                                \
+        typename detail::create_signature<F##n>::type                       \
+    /**/
+
+} // namespace detail
+} // namespace mml
+#endif // MML_RESULT_OF_SUPPORT_ON
 
 
 namespace mml {
@@ -74,88 +99,11 @@ namespace detail {
     /**/
 
 
-#ifdef MML_RESULT_OF_SUPPORT_ON
-
-    template <long N>
-    struct index_sizer
-    {
-        char value[N + 1];
-    };
-
-
-    template <size_t Size>
-    struct index_by_size
-        : boost::mpl::long_<Size/sizeof(char) - 1>
-    {
-    };
-
-
-    template <typename>
-    struct fn_index_of;
-
-
-#   define _MML_VALUE_OF_TYPE_An(z, n, _)                                   \
-        boost::declval<A##n>()                                              \
-        /**/
-
-#   define _MML_OF_FN_INDEX_OF(z, n, _)                                     \
-        template <                                                          \
-            typename F                                                      \
-            BOOST_PP_ENUM_TRAILING_PARAMS(n, typename A)                    \
-            >                                                               \
-        struct fn_index_of<F(BOOST_PP_ENUM_PARAMS(n, A))>                   \
-        {                                                                   \
-            typedef index_by_size<                                          \
-                sizeof(                                                     \
-                    boost::declval<F>()._mml_result_sizer_of(               \
-                        BOOST_PP_ENUM(n, _MML_VALUE_OF_TYPE_An, )           \
-                        ).value                                             \
-                    )                                                       \
-                > type;                                                     \
-                                                                            \
-            BOOST_STATIC_CONSTANT(long, value = type::value);               \
-        };                                                                  \
-        /**/
-
-
-    BOOST_PP_REPEAT(
-          BOOST_PP_INC(MML_MAX_ARITY)
-        , _MML_OF_FN_INDEX_OF
-        ,
-        )
-
-
-#   undef _MML_VALUE_OF_TYPE_An
-#   undef _MML_OF_FN_INDEX_OF
-
-
-#   define _MML_OF_INVOKER_RESULT_SIZER_OF(n)                               \
-        using base_class::_mml_result_sizer_of;                             \
-        static index_sizer<N> _mml_result_sizer_of(                         \
-            BOOST_PP_ENUM(                                                  \
-                  n                                                         \
-                , _MML_OF_INVOKER_CALL_OPERATOR_FORMAL_PARAM                \
-                ,                                                           \
-                )                                                           \
-            );                                                              \
-        /**/
-
-#else
-
-#   define _MML_OF_INVOKER_RESULT_SIZER_OF(n)
-
-#endif // MML_RESULT_OF_SUPPORT_ON
-
-
     class root_invoker
     {
         struct dummy;
     public:
         void operator()(dummy) const;
-
-#ifdef MML_RESULT_OF_SUPPORT_ON
-        static void _mml_result_sizer_of(dummy);
-#endif // MML_RESULT_OF_SUPPORT_ON
     };
 
 
@@ -194,23 +142,31 @@ namespace detail {
         boost::mpl::at_c<component_types, n + 1>::type arg_type##n;         \
     /**/
 
-#if defined(_MSC_VER) && _MSC_VER < 1400
-#   define _MML_OF_INVOKER_NONCONST_CALL_OPERATOR(n)
-#else
-#   define _MML_OF_INVOKER_NONCONST_CALL_OPERATOR(n)                        \
-        r_type  operator()(                                                 \
-            BOOST_PP_ENUM(                                                  \
-                  n                                                         \
-                , _MML_OF_INVOKER_CALL_OPERATOR_FORMAL_PARAM                \
-                ,                                                           \
-                )                                                           \
+#define _MML_OF_INVOKER_CALL_OPERATOR(n, const_kw)                          \
+    r_type  operator()(                                                     \
+        BOOST_PP_ENUM(                                                      \
+                n                                                           \
+            , _MML_OF_INVOKER_CALL_OPERATOR_FORMAL_PARAM                    \
+            ,                                                               \
             )                                                               \
-        {                                                                   \
-            return                                                          \
-            static_cast<derived_class*>(this)->template get<N>()(           \
-                BOOST_PP_ENUM_PARAMS(n, a)                                  \
-                );                                                          \
-        }                                                                   \
+        ) const_kw                                                          \
+    {                                                                       \
+        return                                                              \
+        static_cast<derived_class const_kw*>(this)->template get<N>()(      \
+            BOOST_PP_ENUM_PARAMS(n, a)                                      \
+            );                                                              \
+    }                                                                       \
+    /**/
+
+#if defined(_MSC_VER) && _MSC_VER < 1400
+#   define _MML_OF_INVOKER_CALL_OPERATOR_DEF(n)                             \
+        /*workaround for old MSVC: only const operator() without nonconst*/ \
+        _MML_OF_INVOKER_CALL_OPERATOR(n, const)                             \
+        /**/
+#else
+#   define _MML_OF_INVOKER_CALL_OPERATOR_DEF(n)                             \
+        _MML_OF_INVOKER_CALL_OPERATOR(n, )                                  \
+        _MML_OF_INVOKER_CALL_OPERATOR(n, const)                             \
         /**/
 #endif // defined(_MSC_VER) && _MSC_VER < 1400
 
@@ -242,25 +198,7 @@ namespace detail {
                                                                             \
     public:                                                                 \
         using base_class::operator();                                       \
-                                                                            \
-        _MML_OF_INVOKER_NONCONST_CALL_OPERATOR(n)                           \
-                                                                            \
-        r_type operator()(                                                  \
-            BOOST_PP_ENUM(                                                  \
-                  n                                                         \
-                , _MML_OF_INVOKER_CALL_OPERATOR_FORMAL_PARAM                \
-                ,                                                           \
-                )                                                           \
-            ) const                                                         \
-        {                                                                   \
-            return                                                          \
-            static_cast<derived_class const*>(this)->template get<N>()(     \
-                BOOST_PP_ENUM_PARAMS(n, a)                                  \
-                );                                                          \
-        }                                                                   \
-                                                                            \
-        _MML_OF_INVOKER_RESULT_SIZER_OF(n)                                  \
-                                                                            \
+        _MML_OF_INVOKER_CALL_OPERATOR_DEF(n)                                \
     };                                                                      \
     /**/
 
@@ -344,9 +282,7 @@ namespace detail {
     template <typename Seq>
     class overloaded_function_over_seq
         :
-#if defined(_MSC_VER) && _MSC_VER < 1500
-        public      // MSVC workaround of inaccessible base
-#elif defined(__GNUC__)
+#ifdef __GNUC__
         protected   // GCC workaround of inaccessible base
 #else
         private     // correct case
@@ -356,9 +292,6 @@ namespace detail {
             , boost::mpl::size<Seq>::value
             >::type
     {
-        template <typename>
-        friend struct fn_index_of;
-
         typedef typename get_invoker_base<
               Seq
             , boost::mpl::size<Seq>::value
@@ -446,21 +379,6 @@ namespace detail {
                 ->template get<F>();
         }
 
-#ifdef MML_RESULT_OF_SUPPORT_ON
-        using base_class::_mml_result_sizer_of;
-
-        template <typename F>
-        struct result
-        {
-            typedef typename boost::function_types::result_type<
-                typename boost::mpl::at<
-                      signatures
-                    , fn_index_of<F>
-                    >::type
-                >::type type;
-        };
-#endif // MML_RESULT_OF_SUPPORT_ON
-
     protected:
         BOOST_PP_REPEAT(
               BOOST_PP_INC(MML_MAX_FUNCTION_OVERLOADS)
@@ -515,6 +433,12 @@ class overloaded_function
     : public detail::overloaded_function_over_seq<
         boost::mpl::vector<_MML_OF_TEMPLATE_FACT_PARAM_LIST>
         >
+#ifdef MML_RESULT_OF_SUPPORT_ON
+    , public mml::result_of_support<
+        BOOST_PP_ENUM(MML_MAX_FUNCTION_OVERLOADS, _MML_OF_CREATE_SIGNATURE, )
+        >
+#   undef _MML_OF_CREATE_SIGNATURE
+#endif // MML_RESULT_OF_SUPPORT_ON
 {
     typedef detail::overloaded_function_over_seq<
         boost::mpl::vector<_MML_OF_TEMPLATE_FACT_PARAM_LIST>
@@ -533,9 +457,9 @@ public:
 
 // undef temporaries
 #undef _MML_OF_INVOKER_CALL_OPERATOR_FORMAL_PARAM
-#undef _MML_OF_INVOKER_RESULT_SIZER_OF
 #undef _MML_OF_INVOKER_ARG_TYPEDEF
-#undef _MML_OF_INVOKER_NONCONST_CALL_OPERATOR
+#undef _MML_OF_INVOKER_CALL_OPERATOR
+#undef _MML_OF_INVOKER_CALL_OPERATOR_DEF
 #undef _MML_OF_INVOKER
 #undef _MML_OF_TEMPLATE_FACT_PARAM_LIST
 #undef _MML_OF_F_TYPEDEF
