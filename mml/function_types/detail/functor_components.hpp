@@ -124,14 +124,16 @@ struct functor_components_over_signature
 };
 
 
+struct _this_marker{};
+
 template <typename F>
 struct functor_components_over_call_op_type
     : boost::mpl::remove< // todo: check perfomance and compare with mpl::erase
-            typename boost::function_types::components<
-                BOOST_TYPEOF_TPL(&F::operator())
-            , boost::mpl::always<struct _this_marker>
+          typename boost::function_types::components<
+              BOOST_TYPEOF_TPL(&F::operator())
+            , boost::mpl::always<_this_marker>
             >::types
-        , struct _this_marker
+        , _this_marker
         >::type
 {
 };
@@ -143,8 +145,8 @@ struct functor_components_impl
           has_signature<F>
         , functor_components_over_signature<F>
         , typename boost::mpl::if_<
-                boost::mpl::or_<
-                    has_first_argument_type<F>
+              boost::mpl::or_<
+                  has_first_argument_type<F>
                 , has_arg1_type<F>
                 , has_argument_type<F>
                 >
