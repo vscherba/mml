@@ -7,8 +7,8 @@
 //
 
 
-#ifndef _MML_OVERLOADED_FUNCTION_OVERLOADED_FUNCTION_HPP_INCLUDED_
-#define _MML_OVERLOADED_FUNCTION_OVERLOADED_FUNCTION_HPP_INCLUDED_
+#ifndef _MML_INLINE_OVERLOADED_FN_INLINE_OVERLOADED_FN_HPP_INCLUDED_
+#define _MML_INLINE_OVERLOADED_FN_INLINE_OVERLOADED_FN_HPP_INCLUDED_
 
 
 // boost::preprocessor
@@ -120,7 +120,7 @@ namespace detail {
 
     // fwd
     template <typename Seq>
-    class overloaded_function_over_seq;
+    class inline_overloaded_fn_over_seq;
 
 
     template <typename Seq, long N>
@@ -179,7 +179,7 @@ namespace detail {
             get_invoker_base<Seq, N>::type base_class;                      \
                                                                             \
         typedef                                                             \
-            overloaded_function_over_seq<Seq> derived_class;                \
+            inline_overloaded_fn_over_seq<Seq> derived_class;               \
                                                                             \
         typedef typename                                                    \
             boost::mpl::at_c<Seq, N>::type f_type;                          \
@@ -266,7 +266,7 @@ namespace detail {
     /**/
 
 #define _MML_OF_SEQ_CONSTRUCTOR(z, n, _)                                    \
-    explicit overloaded_function_over_seq(                                  \
+    explicit inline_overloaded_fn_over_seq(                                 \
         BOOST_PP_ENUM(                                                      \
               n                                                             \
             , _MML_OF_CONSTRUCTOR_FORMAL_PARAM                              \
@@ -280,7 +280,7 @@ namespace detail {
 
 
     template <typename Seq>
-    class overloaded_function_over_seq
+    class inline_overloaded_fn_over_seq
         :
 #ifdef __GNUC__
         protected   // GCC workaround of inaccessible base
@@ -352,7 +352,7 @@ namespace detail {
             >::const_reference
         get() const
         {
-            return const_cast<overloaded_function_over_seq*>(this)
+            return const_cast<inline_overloaded_fn_over_seq*>(this)
                 ->template get<N>();
         }
 
@@ -375,7 +375,7 @@ namespace detail {
         typename boost::call_traits<F>::const_reference
         get() const
         {
-            return const_cast<overloaded_function_over_seq*>(this)
+            return const_cast<inline_overloaded_fn_over_seq*>(this)
                 ->template get<F>();
         }
 
@@ -386,7 +386,7 @@ namespace detail {
             ,
             )
 
-        ~overloaded_function_over_seq()
+        ~inline_overloaded_fn_over_seq()
         {
         }
 
@@ -399,7 +399,7 @@ namespace detail {
                     >::type
                 >::value)
             , TWO_OR_MORE_OVERLOADED_FUNCTIONS_HAVE_EQUAL_PARAMETER_LISTS
-            , (typename overloaded_function_over_seq::signatures)
+            , (typename inline_overloaded_fn_over_seq::signatures)
             );
 
         tuple_type _funcs;
@@ -409,7 +409,7 @@ namespace detail {
 
 
 #define _MML_OF_CONSTRUCTOR(z, n, _)                                        \
-    explicit overloaded_function(                                           \
+    explicit inline_overloaded_fn(                                          \
         BOOST_PP_ENUM(                                                      \
               n                                                             \
             , _MML_OF_CONSTRUCTOR_FORMAL_PARAM                              \
@@ -429,8 +429,8 @@ template <
         , = boost::mpl::na BOOST_PP_INTERCEPT
         )
     >
-class overloaded_function
-    : public detail::overloaded_function_over_seq<
+class inline_overloaded_fn
+    : public detail::inline_overloaded_fn_over_seq<
         boost::mpl::vector<_MML_OF_TEMPLATE_FACT_PARAM_LIST>
         >
 #ifdef MML_RESULT_OF_SUPPORT_ON
@@ -440,7 +440,7 @@ class overloaded_function
 #   undef _MML_OF_CREATE_SIGNATURE
 #endif // MML_RESULT_OF_SUPPORT_ON
 {
-    typedef detail::overloaded_function_over_seq<
+    typedef detail::inline_overloaded_fn_over_seq<
         boost::mpl::vector<_MML_OF_TEMPLATE_FACT_PARAM_LIST>
         > base_class;
 
@@ -468,4 +468,4 @@ public:
 #undef _MML_OF_CONSTRUCTOR
 
 
-#endif // _MML_OVERLOADED_FUNCTION_OVERLOADED_FUNCTION_HPP_INCLUDED_
+#endif // _MML_INLINE_OVERLOADED_FN_INLINE_OVERLOADED_FN_HPP_INCLUDED_

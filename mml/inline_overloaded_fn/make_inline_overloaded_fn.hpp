@@ -7,8 +7,8 @@
 //
 
 
-#ifndef _MML_OVERLOADED_FUNCTION_MAKE_OVERLOADED_FUNCTION_HPP_INCLUDED_
-#define _MML_OVERLOADED_FUNCTION_MAKE_OVERLOADED_FUNCTION_HPP_INCLUDED_
+#ifndef _MML_INLINE_OVERLOADED_FN_MAKE_INLINE_OVERLOADED_FN_HPP_INCLUDED_
+#define _MML_INLINE_OVERLOADED_FN_MAKE_INLINE_OVERLOADED_FN_HPP_INCLUDED_
 
 
 // boost::preprocessor
@@ -17,21 +17,21 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
 
-#include <mml/overloaded_function/overloaded_function.hpp>
+#include <mml/inline_overloaded_fn/inline_overloaded_fn.hpp>
 
 
 namespace mml {
 
-#define _MML_MAKE_OVERLOADED_FUNCTION(z, n, _)                              \
+#define _MML_MAKE_INLINE_OVERLOADED_FN(z, n, _)                             \
     template <                                                              \
         BOOST_PP_ENUM_PARAMS(n, typename F)                                 \
         >                                                                   \
     inline                                                                  \
-    overloaded_function<BOOST_PP_ENUM_PARAMS(n, F)>                         \
-    make_overloaded_function(BOOST_PP_ENUM_BINARY_PARAMS(n, F, f))          \
+    inline_overloaded_fn<BOOST_PP_ENUM_PARAMS(n, F)>                        \
+    make_inline_overloaded_fn(BOOST_PP_ENUM_BINARY_PARAMS(n, F, f))         \
     {                                                                       \
         return                                                              \
-        overloaded_function<BOOST_PP_ENUM_PARAMS(n, F)>(                    \
+        inline_overloaded_fn<BOOST_PP_ENUM_PARAMS(n, F)>(                   \
             BOOST_PP_ENUM_PARAMS(n, f)                                      \
             );                                                              \
     }                                                                       \
@@ -41,15 +41,15 @@ namespace mml {
 BOOST_PP_REPEAT_FROM_TO(
       1
     , BOOST_PP_INC(MML_MAX_FUNCTION_OVERLOADS)
-    , _MML_MAKE_OVERLOADED_FUNCTION
+    , _MML_MAKE_INLINE_OVERLOADED_FN
     ,
     )
 
 
 // undef temporaries
-#undef _MML_MAKE_OVERLOADED_FUNCTION
+#undef _MML_MAKE_INLINE_OVERLOADED_FN
 
 } // namespace mml
 
 
-#endif // _MML_OVERLOADED_FUNCTION_MAKE_OVERLOADED_FUNCTION_HPP_INCLUDED_
+#endif // _MML_INLINE_OVERLOADED_FN_MAKE_INLINE_OVERLOADED_FN_HPP_INCLUDED_

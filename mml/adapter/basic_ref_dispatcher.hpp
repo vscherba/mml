@@ -53,14 +53,14 @@ namespace detail {
 
 
     template <typename OF, typename R>
-    struct overloaded_function_ref_adapter
+    struct inline_overloaded_fn_ref_adapter
         : OF
     {
-        overloaded_function_ref_adapter()
+        inline_overloaded_fn_ref_adapter()
         {
         }
 
-        overloaded_function_ref_adapter(
+        inline_overloaded_fn_ref_adapter(
             typename boost::call_traits<OF>::param_type of
             )
             : OF(of)
@@ -102,14 +102,14 @@ namespace detail {
 
 
     template <typename OF>
-    struct overloaded_function_ref_adapter<OF, void>
+    struct inline_overloaded_fn_ref_adapter<OF, void>
         : OF
     {
-        overloaded_function_ref_adapter()
+        inline_overloaded_fn_ref_adapter()
         {
         }
 
-        overloaded_function_ref_adapter(
+        inline_overloaded_fn_ref_adapter(
             typename boost::call_traits<OF>::param_type of
             )
             : OF(of)
@@ -172,7 +172,7 @@ class ref_dispatcher_base
 {
 public:
     typedef basic_dispatcher<
-          detail::overloaded_function_ref_adapter<OF, R>
+          detail::inline_overloaded_fn_ref_adapter<OF, R>
         , R
         , RFs
         , EH

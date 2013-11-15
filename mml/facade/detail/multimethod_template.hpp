@@ -23,7 +23,7 @@
 #include <boost/call_traits.hpp>
 
 #include <mml/config.hpp>
-#include <mml/overloaded_function/overloaded_function.hpp>
+#include <mml/inline_overloaded_fn/inline_overloaded_fn.hpp>
 #include <mml/util/dispatched_to_refineries.hpp>
 #include <mml/facade/detail/with_policies.hpp>
 #include <mml/function_types/result_type.hpp>
@@ -59,10 +59,10 @@ template <
     >
 class _MML_FACADE_NAME
     : public _MML_FACADE_BASE_CLASS_NAME<
-          overloaded_function<_MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST>
+          inline_overloaded_fn<_MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST>
         , typename function_types::result_type<F0>::type
         , typename dispatched_to_refineries<
-              overloaded_function<_MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST>
+              inline_overloaded_fn<_MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST>
             , dynamic_caster
             , dynamic_downcast_allowed
             , implicit_caster
@@ -125,10 +125,10 @@ class _MML_FACADE_NAME<
     , _MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST
     >
     : public _MML_FACADE_BASE_CLASS_NAME<
-          overloaded_function<_MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST>
+          inline_overloaded_fn<_MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST>
         , R
         , typename dispatched_to_refineries<
-              overloaded_function<_MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST>
+              inline_overloaded_fn<_MML_MULTIMETHOD_TEMPLATE_FACT_PARAM_LIST>
             , DynCaster
             , DynCastablePred
             , StatCaster

@@ -41,7 +41,7 @@
 // MML_COMPRESSION_OFF - define this macro to disable tuple compression
 
 // MML_RESULT_OF_SUPPORT_ON - define this macro to enable
-// result_of protocol support by overloaded_function template
+// result_of protocol support by inline_overloaded_fn template
 
 
 #endif // _MML_CONFIG_HPP_INCLUDED_
