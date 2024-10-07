@@ -30,7 +30,7 @@ make_multimethod(
             , collide_as_as
             );
 
-See https://bitbucket.org/vscherba/mml/src/tip/example/simple_multimethod.cpp for more details.
+See https://github.com/vscherba/mml/blob/master/example/simple_multimethod.cpp for more details.
 
 Compilers tested (for the present Windows only):
 
